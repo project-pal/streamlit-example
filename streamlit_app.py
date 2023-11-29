@@ -1,40 +1,42 @@
-import altair as alt
-import numpy as np
-import pandas as pd
 import streamlit as st
+from pyvis.network import Network
+import networkx as nx
+import streamlit.components.v1 as components
 
-"""
-# Welcome to Streamlit!
+# Function to create a network graph
+def create_network():
+    # Create a graph object
+    nx_graph = nx.Graph()
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:.
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+    # Add nodes
+    nx_graph.add_node("Node 1")
+    nx_graph.add_node("Node 2")
+    nx_graph.add_node("Node 3")
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+    # Add edges
+    nx_graph.add_edge("Node 1", "Node 2")
+    nx_graph.add_edge("Node 2", "Node 3")
+    nx_graph.add_edge("Node 3", "Node 1")
 
-num_points = st.slider("Number of points in spiral", 1, 10000, 1100)
-num_turns = st.slider("Number of turns in spiral", 1, 300, 31)
+    # Create a Pyvis network from the NetworkX graph
+    nt = Network("500px", "500px")
+    nt.from_nx(nx_graph)
+    return nt
 
-indices = np.linspace(0, 1, num_points)
-theta = 2 * np.pi * num_turns * indices
-radius = indices
+# Streamlit app
+def main():
+    st.title("Network Visualization Example")
 
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
+    # Create the network graph
+    nt = create_network()
 
-df = pd.DataFrame({
-    "x": x,
-    "y": y,
-    "idx": indices,
-    "rand": np.random.randn(num_points),
-})
+    # Generate an HTML file of the graph
+    nt.show("graph.html")
 
-st.altair_chart(alt.Chart(df, height=700, width=700)
-    .mark_point(filled=True)
-    .encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color=alt.Color("idx", legend=None, scale=alt.Scale()),
-        size=alt.Size("rand", legend=None, scale=alt.Scale(range=[1, 150])),
-    ))
+    # Use Streamlit's components.html to display the graph
+    HtmlFile = open("graph.html", 'r', encoding='utf-8')
+    source_code = HtmlFile.read() 
+    components.html(source_code, width=500, height=500)
+
+if __name__ == "__main__":
+    main()
